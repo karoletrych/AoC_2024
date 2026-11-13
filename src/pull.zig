@@ -89,7 +89,12 @@ pub fn main(init: std.process.Init) !void {
         std.debug.print("adventofcode.com returned an empty body\n", .{});
         std.process.exit(1);
     }
-    if (std.mem.indexOfScalar(u8, body, '<') != null) {
+    // Puzzle inputs can legitimately contain '<' (2024 day 3 and day 15 do),
+    // so only reject responses that actually start like an HTML page.
+    const trimmed = std.mem.trimStart(u8, body, " \t\r\n");
+    if (std.mem.startsWith(u8, trimmed, "<!DOCTYPE") or
+        std.mem.startsWith(u8, trimmed, "<html"))
+    {
         std.debug.print(
             "adventofcode.com returned HTML instead of puzzle input; the session is probably expired.\n",
             .{},
